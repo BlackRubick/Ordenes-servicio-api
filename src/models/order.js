@@ -19,7 +19,11 @@ module.exports = (sequelize, DataTypes) => {
     piezasUsadas: { type: DataTypes.JSON, allowNull: true },
     costoTotal: { type: DataTypes.DECIMAL(10,2), allowNull: true },
     fechaEstimada: { type: DataTypes.STRING, allowNull: true },
-    fechaFinalizacion: { type: DataTypes.STRING, allowNull: true }
+    fechaFinalizacion: { type: DataTypes.STRING, allowNull: true },
+    motivoCancelacion: { type: DataTypes.TEXT, allowNull: true },
+    fechaCancelacion: { type: DataTypes.STRING, allowNull: true },
+    fechaEntrega: { type: DataTypes.STRING, allowNull: true },
+    quienRecibe: { type: DataTypes.STRING, allowNull: true }
   })
 
   return Order
