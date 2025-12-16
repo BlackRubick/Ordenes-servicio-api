@@ -23,7 +23,10 @@ module.exports = (sequelize, DataTypes) => {
     motivoCancelacion: { type: DataTypes.TEXT, allowNull: true },
     fechaCancelacion: { type: DataTypes.STRING, allowNull: true },
     fechaEntrega: { type: DataTypes.STRING, allowNull: true },
-    quienRecibe: { type: DataTypes.STRING, allowNull: true }
+    quienRecibe: { type: DataTypes.STRING, allowNull: true },
+    eliminada: { type: DataTypes.BOOLEAN, defaultValue: false },
+    fechaEliminacion: { type: DataTypes.STRING, allowNull: true },
+    motivoEliminacion: { type: DataTypes.TEXT, allowNull: true }
   })
 
   return Order

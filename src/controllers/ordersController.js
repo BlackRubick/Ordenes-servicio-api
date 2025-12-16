@@ -18,7 +18,7 @@ const createOrder = async (req, res) => {
 
 const listOrders = async (req, res) => {
   try {
-    const where = {}
+    const where = { eliminada: false }
     if (req.user?.role === 'tecnico' && req.user?.uid) {
       where.tecnicoUid = req.user.uid
     }
@@ -68,8 +68,47 @@ const deleteOrder = async (req, res) => {
     const order = await Order.findByPk(id)
     if (!order) return res.status(404).json({ message: 'Orden no encontrada' })
 
-    await order.destroy()
-    res.json({ message: 'Orden eliminada' })
+    // Soft delete: marcar como eliminada en lugar de destruir
+    const { motivo } = req.body
+    await order.update({
+      eliminada: true,
+      fechaEliminacion: new Date().toLocaleDateString('es-ES'),
+      motivoEliminacion: motivo || 'Sin motivo especificado'
+    })
+    res.json({ message: 'Orden eliminada', order })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+const listDeletedOrders = async (req, res) => {
+  try {
+    const where = { eliminada: true }
+    if (req.user?.role === 'tecnico' && req.user?.uid) {
+      where.tecnicoUid = req.user.uid
+    }
+    const orders = await Order.findAll({ where, include: [{ model: User, as: 'user', attributes: ['id','name','email'] }, { model: Technician, as: 'tecnico', attributes: ['id','uid','nombre','email'] }] })
+    res.json(orders)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+const restoreOrder = async (req, res) => {
+  try {
+    const { id } = req.params
+    const order = await Order.findByPk(id)
+    if (!order) return res.status(404).json({ message: 'Orden no encontrada' })
+    if (!order.eliminada) return res.status(400).json({ message: 'La orden no está eliminada' })
+
+    await order.update({
+      eliminada: false,
+      fechaEliminacion: null,
+      motivoEliminacion: null
+    })
+    res.json({ message: 'Orden restaurada', order })
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: 'Server error' })
@@ -95,4 +134,4 @@ const getByFolioPublic = async (req, res) => {
   }
 }
 
-module.exports = { createOrder, listOrders, getOrder, updateOrder, deleteOrder, getByFolioPublic }
+module.exports = { createOrder, listOrders, getOrder, updateOrder, deleteOrder, getByFolioPublic, listDeletedOrders, restoreOrder }
