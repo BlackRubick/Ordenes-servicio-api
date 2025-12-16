@@ -1,4 +1,5 @@
 const { Technician, User } = require('../models')
+const bcrypt = require('bcryptjs')
 
 const normalizeUser = (u) => ({
   id: u.id,
@@ -38,11 +39,16 @@ const updateUserByUid = async (uid, data) => {
   // Update technician by uid
   const tech = await Technician.findOne({ where: { uid } })
   if (tech) {
+    let password = tech.password
+    if (data.password) {
+      password = await bcrypt.hash(data.password, 10)
+    }
     await tech.update({
       nombre: data.nombre ?? tech.nombre,
       email: data.email ?? tech.email,
       rol: data.rol ?? tech.rol,
-      activo: typeof data.activo === 'boolean' ? data.activo : tech.activo
+      activo: typeof data.activo === 'boolean' ? data.activo : tech.activo,
+      password
     })
     return { updatedIn: 'technician', record: tech }
   }
@@ -52,10 +58,15 @@ const updateUserByUid = async (uid, data) => {
     if (!Number.isNaN(id)) {
       const user = await User.findByPk(id)
       if (user) {
+        let password = user.password
+        if (data.password) {
+          password = await bcrypt.hash(data.password, 10)
+        }
         await user.update({
           name: data.nombre ?? user.name,
           email: data.email ?? user.email,
-          role: data.rol ?? user.role
+          role: data.rol ?? user.role,
+          password
         })
         return { updatedIn: 'user', record: user }
       }
